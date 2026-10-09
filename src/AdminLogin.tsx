@@ -37,7 +37,7 @@ export default function AdminLogin({ onLogin }: { onLogin: () => void }) {
           {error && <p className="form-error">{error}</p>}
           <button className="button button-dark full-width" type="submit">Sign in <ArrowRight size={16}/></button>
         </form>
-        {usingDefaultCredentials && (
+        {import.meta.env.DEV && usingDefaultCredentials && (
           <p className="login-hint"><LockKeyhole size={14}/>
             <span>Demo credentials: <b>admin / aura2026</b>. Set <code>VITE_ADMIN_USERNAME</code> and <code>VITE_ADMIN_PASSWORD</code> in a <code>.env</code> file to change them.</span>
           </p>
