@@ -76,3 +76,5 @@ Aura Estates includes a luxury light/dark theme toggle in the public navbar and 
 - Theme preference persists after refresh.
 - The same selection applies to public pages and the admin workspace.
 - Theme switching uses a subtle transition and respects reduced-motion preferences.
+
+# Aura-Estates
