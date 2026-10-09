@@ -79,6 +79,6 @@ export const initialProperties: Property[] = Array.from({ length: 30 }, (_, i) =
     yearBuilt: 2016 + (i % 9),
     featured: i < 6 || i % 7 === 0,
     createdAt: new Date(Date.now() - i * 86400000 * 3).toISOString(),
-    agent: { name: ["Ayesha Khan", "Hamza Ali", "Sara Malik"][i % 3], role: "Property Consultant", phone: "+92 300 1234567", email: "hello@auraestates.example" }
+    agent: { name: ["Ayesha Khan", "Hamza Ali", "Sara Malik"][i % 3], role: "Property Consultant", phone: "+923258247569", email: "bashirahmad7576@gmail.com" }
   };
 });
