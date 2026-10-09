@@ -60,14 +60,19 @@ export const initialProperties: Property[] = Array.from({ length: 30 }, (_, i) =
   const p = safePhotoIds[i % safePhotoIds.length];
   const p2 = safePhotoIds[(i + 3) % safePhotoIds.length];
   const p3 = safePhotoIds[(i + 6) % safePhotoIds.length];
+  const sizeIndex = i % 6;
+  const area = [5, 7, 10, 12, 14, 18][sizeIndex] * 225;
+  const buyPriceBySize = [1000000, 1250000, 1600000, 1800000, 2050000, 2500000];
+  const rentPriceBySize = [100000, 110000, 120000, 125000, 135000, 150000];
+  const price = listing === "Rent" ? rentPriceBySize[sizeIndex] : buyPriceBySize[sizeIndex];
   return {
     id: `HV-${String(1024 + i)}`,
     title: titles[i],
     type,
     listing,
     location: locations[i % locations.length],
-    price: listing === "Rent" ? 90000 + (i % 6) * 25000 : 14500000 + (i % 10) * 4850000,
-    area: [5, 7, 10, 12, 14, 18][i % 6] * 225,
+    price,
+    area,
     bedrooms: 2 + (i % 5),
     bathrooms: 2 + (i % 4),
     parking: 1 + (i % 3),

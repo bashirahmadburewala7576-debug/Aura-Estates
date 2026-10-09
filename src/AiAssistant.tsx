@@ -22,7 +22,7 @@ const ADMIN_PROMPTS = [
 ];
 
 const PUBLIC_PROMPTS = [
-  "Find me a 3-bed home in Lahore under PKR 50M",
+  "Find me a 3-bed home in Lahore under PKR 2M",
   "Which homes are for rent?",
   "Show me your featured properties",
   "How do I book a viewing?",
@@ -40,7 +40,7 @@ function publicPersona(properties: Property[]): string {
     "",
     "TONE & STYLE:",
     "- Warm, polished, concise — like a trusted property advisor. Keep replies under ~120 words unless the user asks for more detail.",
-    "- Prices always in PKR: sale prices like PKR 42.50M (or PKR 850,000 when under 1M), rents like PKR 450,000/mo. Never convert currencies.",
+    "- Prices always in PKR: sale prices like PKR 1.25M or PKR 2.50M, rents like PKR 120,000/mo. Never convert currencies.",
     "- If the user writes in Roman Urdu or Urdu, reply in the same style.",
     "",
     "WHAT YOU KNOW ABOUT THE SITE (explain only when it helps):",

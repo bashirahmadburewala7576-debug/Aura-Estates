@@ -12,7 +12,7 @@ import { adminLogout, isAdminAuthenticated } from "./auth";
 import AdminLogin from "./AdminLogin";
 import AiAssistant from "./AiAssistant";
 
-const STORAGE = "haven-marketplace-v1";
+const STORAGE = "haven-marketplace-v2";
 type Inquiry = { id: string; propertyId: string; name: string; email: string; phone: string; message: string; date: string; time: string; createdAt: string; status: "New" | "Contacted" | "Completed" };
 const money = (n: number, listing: string) => listing === "Rent" ? `PKR ${n.toLocaleString("en-PK")}/mo` : `PKR ${(n / 1000000).toFixed(2)}M`;
 const areaLabel = (n: number) => `${n.toLocaleString()} sq ft`;
@@ -23,6 +23,21 @@ const readStore = () => {
   } catch { return null; }
 };
 const writeStore = (value: unknown) => { try { localStorage.setItem(STORAGE, JSON.stringify(value)); } catch { /* storage can be unavailable in private browsing */ } };
+
+const CONTACT_EMAIL = "bashirahmad7576@gmail.com";
+// Delivers website messages to CONTACT_EMAIL via FormSubmit (free, no backend/key).
+const sendEmail = async (data: Record<string, string>) => {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${CONTACT_EMAIL}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ _subject: "Aura Estates — new website message", _template: "table", _captcha: "false", ...data }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+};
 
 function useMarketplace() {
   const [properties, setProperties] = useState<Property[]>(() => readStore()?.properties ?? initialProperties);
@@ -42,8 +57,9 @@ function useMarketplace() {
   };
   const toggleFavorite = (id: string) => setFavorites(old => old.includes(id) ? old.filter(x => x !== id) : [...old, id]);
   const toggleCompare = (id: string) => setCompare(old => old.includes(id) ? old.filter(x => x !== id) : old.length >= 4 ? old : [...old, id]);
+  const clearCompare = () => setCompare([]);
   const addInquiry = (item: Inquiry) => setInquiries(old => [item, ...old]);
-  return { properties, setProperties, favorites, compare, inquiries, setInquiries, activeProperty, setActiveProperty, addProperty, updateProperty, deleteProperty, toggleFavorite, toggleCompare, addInquiry };
+  return { properties, setProperties, favorites, compare, inquiries, setInquiries, activeProperty, setActiveProperty, addProperty, updateProperty, deleteProperty, toggleFavorite, toggleCompare, clearCompare, addInquiry };
 }
 type Store = ReturnType<typeof useMarketplace>;
 const amenities = ["Swimming pool", "Gym", "24/7 security", "Backup power", "Balcony", "Garden", "Parking", "CCTV", "Fitted kitchen", "Nearby parks", "Elevator", "Concierge", "Central heating", "Smart home", "Terrace", "Clubhouse", "Play area", "Water filtration", "Storage", "Walk-in closet"];
@@ -199,6 +215,7 @@ function PropertyDetail({ store }: { store: Store }) {
     if (!form.name.trim() || !/^\S+@\S+\.\S+$/.test(form.email) || !form.phone.trim()) { setFormError("Enter your name, a valid email, and a phone number."); return; }
     if (bookingOpen && (!form.date || !form.time || new Date(`${form.date}T00:00:00`) < new Date(new Date().toDateString()))) { setFormError("Choose a valid future date and one of the available time slots."); return; }
     store.addInquiry({ id: `IN-${Date.now()}`, propertyId: p.id, name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(), message: form.message.trim(), date: bookingOpen ? form.date : "", time: bookingOpen ? form.time : "", createdAt: new Date().toISOString(), status: "New" });
+    void sendEmail({ Type: bookingOpen ? "Viewing request" : "Property inquiry", Property: `${p.title} (${p.id})`, Price: money(p.price, p.listing), Name: form.name.trim(), Email: form.email.trim(), Phone: form.phone.trim(), Viewing: bookingOpen && form.date ? `${form.date} at ${form.time}` : "Not requested", Message: form.message.trim() });
     setInquirySent(true); setFormError("");
   };
   return <main className="container page-main detail-page"><Link to="/properties" className="back-link"><ArrowLeft size={16}/> Back to properties</Link>
@@ -227,7 +244,7 @@ function ContactPage({ store }: { store: Store }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
-  const submit = (e: React.FormEvent) => { e.preventDefault(); if (!form.name.trim() || !/^\S+@\S+\.\S+$/.test(form.email) || !form.message.trim()) {setError("Please provide your name, a valid email, and a message.");return;} store.addInquiry({id:`IN-${Date.now()}`,propertyId:"general",name:form.name,email:form.email,phone:form.phone,message:form.message,date:"",time:"",createdAt:new Date().toISOString(),status:"New"});setSent(true);setError(""); };
+  const submit = (e: React.FormEvent) => { e.preventDefault(); if (!form.name.trim() || !/^\S+@\S+\.\S+$/.test(form.email) || !form.message.trim()) {setError("Please provide your name, a valid email, and a message.");return;} store.addInquiry({id:`IN-${Date.now()}`,propertyId:"general",name:form.name,email:form.email,phone:form.phone,message:form.message,date:"",time:"",createdAt:new Date().toISOString(),status:"New"}); void sendEmail({ Type:"General contact", Name:form.name, Email:form.email, Phone:form.phone||"—", Message:form.message }); setSent(true);setError(""); };
   return <main className="container page-main contact-page"><div className="contact-copy"><div className="eyebrow"><span/> Start a conversation</div><h1>Let's find your<br/><em>next chapter.</em></h1><p>Whether you have a home in mind or just know how you want to feel, we're here to help you take the next step.</p><div className="contact-detail"><span><Mail/></span><div><small>WRITE TO US</small><b>bashirahmad7576@gmail.com</b></div></div><div className="contact-detail"><span><Phone/></span><div><small>GIVE US A CALL</small><b>+923258247569</b></div></div><div className="contact-detail"><span><MapPin/></span><div><small>OUR HOME BASE</small><b>Lahore, Pakistan</b></div></div></div><div className="contact-form-card">{sent ? <div className="success-message large"><CheckCircle2 size={28}/><h2>Message received.</h2><p>Thank you for reaching out. Our team will be in touch soon.</p><button className="button button-outline" onClick={() => {setSent(false);setForm({name:"",email:"",phone:"",message:""});}}>Send another message</button></div> : <form className="inquiry-form" onSubmit={submit}><h2>Tell us a little about it.</h2><p>We'll take it from here.</p><label>Full name<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Your name"/></label><label>Email address<input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="you@example.com"/></label><label>Phone number <span className="optional">Optional</span><input value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="+92 3xx xxxxxxx"/></label><label>How can we help?<textarea rows={5} required value={form.message} onChange={e=>setForm({...form,message:e.target.value})} placeholder="Tell us what you're looking for..."/></label>{error&&<p className="form-error">{error}</p>}<button className="button button-dark full-width" type="submit">Send your message <ArrowRight size={16}/></button></form>}</div></main>;
 }
 
@@ -300,9 +317,11 @@ function AdminPage({ store, theme, onToggleTheme, onLogout }: { store: Store; th
 }
 
 function CompareDock({ store }: { store: Store }) {
+  const { pathname } = useLocation();
   const selected = store.properties.filter(p => store.compare.includes(p.id));
-  if (!selected.length) return null;
-  return <div className="compare-dock"><div className="compare-dock-items">{selected.map(p=><div key={p.id} className="dock-property"><img src={p.images[0]} alt=""/><span>{p.title}</span><button aria-label="Remove from comparison" onClick={()=>store.toggleCompare(p.id)}><X size={13}/></button></div>)}</div><div className="dock-actions"><span>{selected.length}/4 selected</span><Link className="button button-dark" to="/compare">Compare homes <ArrowRight size={15}/></Link><button className="icon-btn" aria-label="Clear comparison" onClick={()=>selected.forEach(p=>store.toggleCompare(p.id))}><Trash2 size={16}/></button></div></div>;
+  if (!selected.length || pathname.startsWith("/admin") || pathname === "/compare") return null;
+  const ready = selected.length >= 2;
+  return <div className="compare-dock"><div className="compare-dock-items">{selected.map(p=><div key={p.id} className="dock-property"><img src={p.images[0]} alt=""/><span>{p.title}</span><button aria-label="Remove from comparison" onClick={()=>store.toggleCompare(p.id)}><X size={13}/></button></div>)}</div><div className="dock-actions"><span>{selected.length}/4 selected</span>{ready ? <Link className="button button-dark" to="/compare">Compare homes <ArrowRight size={15}/></Link> : <span className="dock-hint">Pick one more to compare</span>}<button className="icon-btn" aria-label="Clear comparison" onClick={()=>store.clearCompare()}><Trash2 size={16}/></button></div></div>;
 }
 function Footer({ showAdmin }: { showAdmin: boolean }) { return <footer className="site-footer"><div className="container footer-main"><div className="footer-brand-col"><Link to="/" className="brand footer-brand"><span className="brand-mark"><Home size={19}/></span><span>Aura Estates<span className="brand-dot">.</span><small>PROPERTY COLLECTION</small></span></Link><p>A more considered way to find a place that feels like home.</p></div><div><b>Explore</b><Link to="/properties">All properties</Link><Link to="/favorites">Saved homes</Link><Link to="/compare">Compare homes</Link></div><div><b>Aura Estates</b><Link to="/about">Our story</Link><Link to="/contact">Contact us</Link>{showAdmin && <Link to="/admin">Admin portal</Link>}</div><div><b>Get in touch</b><span>Lahore, Pakistan</span><span>bashirahmad7576@gmail.com</span><span>+923258247569</span></div></div><div className="container footer-bottom"><span>© {new Date().getFullYear()} Aura Estates. Demo concept.</span><span>Thoughtfully found. Beautifully lived.</span></div></footer>; }
 
@@ -310,7 +329,8 @@ function PublicAssistant({ store }: { store: Store }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   if (location.pathname.startsWith("/admin")) return null;
-  return <>{!open && <button className="assistant-fab" onClick={() => setOpen(true)}><Sparkles size={16}/> Ask Aura</button>}{open && <AiAssistant variant="public" properties={store.properties} onClose={() => setOpen(false)}/>}</>;
+  const raised = store.compare.length > 0 && location.pathname !== "/compare";
+  return <>{!open && <button className={`assistant-fab${raised ? " raised" : ""}`} onClick={() => setOpen(true)}><Sparkles size={16}/> Ask Aura</button>}{open && <AiAssistant variant="public" properties={store.properties} onClose={() => setOpen(false)}/>}</>;
 }
 
 function AdminRoute({ store, theme, onToggleTheme, authed, onLogin, onLogout }: { store: Store; theme: Theme; onToggleTheme: () => void; authed: boolean; onLogin: () => void; onLogout: () => void }) {

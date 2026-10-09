@@ -305,3 +305,8 @@ body, .site-header, .main-nav, .trust-strip, .property-card, .property-card-body
 .assistant-prop-links img { width: 42px; height: 34px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
 .assistant-prop-links b { display: block; font-size: 11.5px; color: var(--text-primary); font-weight: 600; }
 .assistant-prop-links small { color: var(--text-secondary); font-size: 10.5px; }
+
+/* Compare dock: guidance until two homes are chosen, and lift the assistant button clear of it. */
+.dock-hint { font-size: 9px; color: #8b958b; }
+.assistant-fab.raised { bottom: 92px; }
+@media (max-width: 640px) { .assistant-fab.raised { bottom: 138px; } }
