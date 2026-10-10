@@ -1,7 +1,7 @@
 const SESSION_KEY = "haven-admin-session";
 
-const USERNAME = import.meta.env.VITE_ADMIN_USERNAME || "admin";
-const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "aura2026";
+const USERNAME = import.meta.env.VITE_ADMIN_USERNAME || "adminlogin";
+const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "aura2026kiran@";
 
 export const usingDefaultCredentials =
   !import.meta.env.VITE_ADMIN_USERNAME && !import.meta.env.VITE_ADMIN_PASSWORD;
